@@ -1,5 +1,8 @@
-var tableDiv, playerDiv, gameSpace, statusDiv, winnerDiv = null;
 
+
+var tableDiv, playerDiv, statusDiv, winnerDiv = null;
+
+// object for gamestate
 var gs = null
 function resetGame() {
   gs = {
@@ -30,13 +33,13 @@ window.onload = function(){
 function initializeDisplay(){
   tableDiv = document.getElementById("table");
   playerDiv = document.getElementById("players");
-  gameSpace = document.getElementById("gameSpace");
   statusDiv = document.getElementById("status");
   winnerDiv = document.getElementById("winnerDiv");
 }
 
-
+// suits all have the same value
 var suits = ['Spades', 'Hearts', 'Diamonds', 'Clubs']
+// the indexes in this array are used for face values
 var faces = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 
 // extend array prototype as opposed to importing lodash
@@ -49,15 +52,17 @@ Array.prototype.count = function(elem) {
   }
   return occurances
 }
-// because js needs indexing like python. some_array[-1] is the last element.
+// because js needs indexing like python. some_list[-1] is the last element.
 Array.prototype.last = function() {
     return this[this.length - 1]
 }
 
+// returns an random index that exists in the deck
 function getRandomCardIndex(remainingDeckSize) {
   return Math.floor(Math.random() * Math.floor(remainingDeckSize));
 }
 
+// get a random card and remove it from the deck object.
 function getCard(deck) {
   var cardIndex = getRandomCardIndex(deck.length)
   var card = deck[cardIndex]
@@ -65,7 +70,7 @@ function getCard(deck) {
   return card
 }
 
-
+// there is no jokers in this deck
 function createDeck() {
   var d = []
   for(s = 0; s < 4; s++) {
@@ -89,6 +94,7 @@ function printState() {
   console.log(gs.deck)
 }
 
+// it's not pretty, but it works.
 function drawState() {
   statusDiv.innerHTML = statusEnum[gs.status].desc
 
@@ -103,6 +109,7 @@ function drawState() {
   tableDiv.innerHTML = gs.tableCards
 }
 
+// there's gotta be a better way to do this. Oh well, it fits MVP
 function nextState() {
   var next = statusEnum[gs.status].action
   gs.status += 1
@@ -113,11 +120,10 @@ function nextState() {
 
 
 function bets() {
-  //todo
+  //todo ... maybe
 }
 
-function dealTexasHoldEmHand() {
-  var handSize = 2
+function dealHand(handSize) {
   for(p = 0; p < gs.players.length; p ++) {
     for(h = 0; h < handSize; h++) {
       gs.players[p].hand.push(getCard(gs.deck))
@@ -125,42 +131,23 @@ function dealTexasHoldEmHand() {
   }
 }
 
-function dealFiveCardDrawHand() {
-  var handSize = 5
-  for(p = 0; p < gs.players.length; p ++) {
-    for(h = 0; h < handSize; h++) {
-      gs.players[p].hand.push(getCard(gs.deck))
-    }
-  }
-}
 
 // These could be reduce to one function with a for loop. I prefer different functions
-function dealFlop() {
+function dealToTable(amount) {
   var burnCard = getCard(gs.deck)
   console.log("one card burned")
-  gs.tableCards.push(getCard(gs.deck))
-  gs.tableCards.push(getCard(gs.deck))
-  gs.tableCards.push(getCard(gs.deck))
-}
-
-function dealTurn() {
-  var burnCard = getCard(gs.deck)
-  console.log("one card burned")
-  gs.tableCards.push(getCard(gs.deck))
-}
-
-function dealRiver() {
-  var burnCard = getCard(gs.deck)
-  console.log("one card burned")
-  gs.tableCards.push(getCard(gs.deck))
+  for(c = 0; c < amount; c++) {
+    gs.tableCards.push(getCard(gs.deck))
+  }
 }
 
 function buildHand() {
-  //todo
+  //todo for texas hold em
 }
 
 function cardVal(cardFace) {
   var indexVal = "0" + faces.indexOf(cardFace)
+  // the value always needs to be a 2 digit string. "02" or "11"
   return indexVal.slice(-2)
 }
 
@@ -257,6 +244,9 @@ function determineWinner() {
     if (score > winner.score) {
       winner.name = gs.players[p].name
       winner.score = score
+    } else if (score == winner.score) {
+      var first = winner.name
+      winner.name = "Split Pot between: " + first + " and " + gs.players[p].name 
     }
   }
   winnerDiv.innerHTML = "Winner is: " + winner.name
@@ -268,7 +258,7 @@ var statusEnum = [
   {
     'desc' : 'Waiting For Hands',
     'action' : function(){
-      dealFiveCardDrawHand()
+      dealHand(5)
     }
   },
   {
@@ -292,7 +282,7 @@ var holdEmEnum = [
   {
     'desc' : 'Waiting For Hands',
     'action' : function(){
-      dealTexasHoldEmHand()
+      dealHand(2)
     }
   },
   // {
@@ -302,7 +292,7 @@ var holdEmEnum = [
   {
     'desc' : 'Waiting For Flop',
     'action' : function(){
-      dealFlop()
+      dealToTable(3)
     }
   },
   // {
@@ -312,7 +302,7 @@ var holdEmEnum = [
   {
     'desc' : 'Waiting For Turn',
     'action' : function(){
-      dealTurn()
+      dealToTable(1)
     }
   },
   // {
@@ -322,7 +312,7 @@ var holdEmEnum = [
   {
     'desc' : 'Waiting For River',
     'action' : function(){
-      dealRiver()
+      dealToTable(1)
     }
   },
   // {
@@ -334,6 +324,12 @@ var holdEmEnum = [
     'action' : function(){
       determineWinner()
     }
+  },
+  {
+    'desc': 'Preparing for next game',
+    'action' : function(){
+      resetGame()
+    }
   }
 ]
 
@@ -341,10 +337,5 @@ function chooseGame(game) {
 
 }
 
-
+// initializes first gameState
 resetGame()
-
-
-
-// gameState = dealRiver(dealTurn(dealFlop(dealTexasHoldEmHand())))
-// printState(gameState)

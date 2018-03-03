@@ -1,3 +1,5 @@
+// Ugly but workable way to test logic and functions. 
+
 Array.prototype.count = function(elem) {
   var occurances = 0
   for (i = 0; i < this.length; i++) {
@@ -12,7 +14,7 @@ Array.prototype.count = function(elem) {
 var test = [1,1,1,2,2,3]
 
 console.log(test)
-console.log("test pass, 3 occurs 1 times: ",test.count(3))
+console.log("test: 3 occurs 1 times: ",test.count(3))
 
 
 Array.prototype.last = function() {
@@ -20,7 +22,7 @@ Array.prototype.last = function() {
 }
 
 
-console.log("test pass, last elem is: ", test.last())
+console.log("test. last elem should be 3: ", test.last())
 
 var faces = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 
@@ -55,7 +57,10 @@ if ((faces.indexOf(highestCard) - faces.indexOf(lowestCard)) == 4 && (faceSet.si
 }
 
 var handFaces = ['2', '4', '4', '6', '5']
-handFaces.sort()
+handFaces.sort(function(x, y)
+          {
+             return faces.indexOf(x) - faces.indexOf(y)
+          })
 var lowestCard = handFaces[0]
 var highestCard = handFaces.last()
 var faceSet = new Set(handFaces)
@@ -74,3 +79,21 @@ function cardVal(cardFace) {
 console.log('cval K', cardVal('K'))
 console.log('cval 2', cardVal('2'))
 console.log('cval T', cardVal('T'))
+
+var handSuits = ["Hearts", "Hearts", "Hearts", "Hearts", "Hearts"]
+var suitSet = new Set(handSuits)
+console.log(handSuits)
+if(suitSet.size === 1) {
+  console.log("pass! Hand is a flush")
+} else {
+  console.log("Fail! Hand should be a flush.")
+}
+
+var handSuits = ["Diamonds", "Hearts", "Hearts", "Diamonds", "Hearts"]
+var suitSet = new Set(handSuits)
+console.log(handSuits)
+if(suitSet.size === 1) {
+  console.log("Fail! Hand is NOT a flush")
+} else {
+  console.log("Pass! Hand is NOT a flush.")
+}
